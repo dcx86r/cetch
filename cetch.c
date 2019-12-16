@@ -115,6 +115,50 @@ int main(int argc, char *argv[])
 	unsigned long freeram = info.freeram/DIVISOR;
 	unsigned long totalram = info.totalram/DIVISOR;
 #endif
+#if defined __linux__
+	size_t sz =0;
+	char *line = 0;
+	char *labels[] = {  "model name",
+						"cpu MHz",
+						"cpu cores"
+	};
+	char vals[3][sizeof(char)*254] = { 0 };
+	typedef enum {
+		true, false
+	} bool;
+	bool defined = false;
+	char cpustr[100];
+	char buf[100];
+	FILE *f = fopen("/proc/cpuinfo", "r");
+	do {
+		ssize_t lsz = getline(&line, &sz, f);
+		if (lsz < 0) break;
+		if (defined == true) break;
+		line[strlen(line)-1] = '\0';
+
+		if (strncmp(line, labels[0], 10) == 0) {
+			strncpy(vals[0], line+13, strlen(line));
+			continue;
+		}
+		if (strncmp(line, labels[1], 7) == 0) {
+			strncpy(vals[1], line+11, strlen(line));
+			continue;
+		}
+		if (strncmp(line, labels[2], 9) == 0) {
+			strncpy(vals[2], line+12, strlen(line));
+// flagging here because this will be the last val printed
+			defined = true;
+			continue;
+		}
+	} while (!feof(f));
+	fclose(f);
+	if (defined == true) {
+// cutting off the unnecessary "Processor" description
+		strncpy(buf, vals[0], strlen(vals[0])-10);
+// string for output in style similar to neofetch
+		snprintf(cpustr, 100, "%s (%s) @ %.4sMHz", buf, vals[2], vals[1]);
+	}
+#endif
     int linenum = 0;
 #include "config.h"
 //    if (logowidth)

@@ -152,9 +152,10 @@ int main(int argc, char *argv[])
 		}
 	} while (!feof(f));
 	fclose(f);
+// cutting off "Processor" description
+	vals[0][strlen(vals[0])-10] = '\0';
 	if (defined == true) {
-// cutting off the unnecessary "Processor" description
-		strncpy(buf, vals[0], strlen(vals[0])-10);
+		strncpy(buf, vals[0], sizeof(buf));
 // string for output in style similar to neofetch
 		snprintf(cpustr, 100, "%s (%s) @ %.4sMHz", buf, vals[2], vals[1]);
 	}
